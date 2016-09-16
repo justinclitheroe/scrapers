@@ -1,6 +1,7 @@
 require 'capybara/poltergeist'
 require 'date'
 require 'nokogiri'
+require 'csv'
 
 #loads poltergeist as a driver
 Capybara.register_driver :poltergeist do |app|
@@ -23,16 +24,7 @@ puts "page loaded"
 #an
 #
 browser.within_frame('trumba.spud.1.iframe') do
-  # divs = browser.all('tr td div')
-  # rows = browser.all('tr')
-  #
-  # eventName = nil
-  # eventDate = nil
-  # eventYear = nil
-  # eventTime = nil
-  # eventDesc = nil
-  # eventLocn = nil
-  #
+
   page = Nokogiri::HTML(browser.source)
   rows = page.css('tr')
 
@@ -48,60 +40,39 @@ browser.within_frame('trumba.spud.1.iframe') do
       if row.at_css('.twDetailListDateLine')
         eventDate = row.at_css('.twDetailListDateLine').content
       else
-        eventDate = nil
+        eventDate = "N/A"
       end
 
       if row.at_css('.twDetailListLocationLine')
         eventLocation = row.at_css('.twDetailListLocationLine').content
       else
-        eventLocation = nil
+        eventLocation = "N/A"
       end
 
       if row.at_css('.twDetailListNotes')
         eventDesc = row.at_css('.twDetailListNotes').content
       else
-        eventDesc = nil
+        eventDesc = "N/A"
       end
     elsif row.at_css('.twDetailListItem')
       puts "Passed: end of event line"
 
       #puts the information into an array
-      infoArray << [eventTitle, eventDate, eventLocation, eventDesc]
+      infoArray << ["#{eventTitle}", "#{eventDate}", "#{eventLocation}", "#{eventDesc}"]
     elsif row.at_css('.twDetailListGroupHead')
       year = row.at_css('.twDetailListGroupHead').content
 
     end
   end
 
+CSV.open("loyolaData.csv", "w") do |csv|
   infoArray.each do |info|
-    puts info
+  	csv << info
   end
+end
 
-
-  # rows.each do |row|
-  #   browser.within(row) do
-  #      if (browser.has_css?('td .twDetailListHeader'))
-  #        puts "this is the fucking title"
-  #      elsif (browser.has_css?('.twContentCell'))
-  #        puts "this is the date/description/location"
-  #      elsif (browser.has_css?('td .twDetailListItem'))
-  #        puts "this is the end of the block"
-  #      elsif (browser.has_css?('td .twDetailListGroupHead'))
-  #        puts "this is the year row"
-  #
-  #      end
-  #   end
-  # end
-
-
-
-  # divs.each do |div|
-  #   puts "#{div['class']}: #{div.text}"
-  # end
-  # puts "succ"
-
-  require 'pry'
-  binding.pry
+  # require 'pry'
+  # binding.pry
 
 end
 
